@@ -1,0 +1,33 @@
+{
+  "name": "Frontend (React)",
+
+  "dockerComposeFile": "../../docker-compose.yml",
+  
+  // 接続するサービスをfrontendに変更
+  "service": "frontend",
+
+  // ワークスペースのパスをfrontendディレクトリに変更
+  "workspaceFolder": "/workspaces/${localWorkspaceFolderBasename}/frontend",
+
+  // コンテナ作成後にnpm installを実行
+  "postCreateCommand": "npm install",
+
+  // VS Codeエディタのカスタマイズ (フロントエンド向けに変更)
+  "customizations": {
+    "vscode": {
+      // フロントエンド向けの拡張機能に絞る
+      "extensions": [
+        "esbenp.prettier-vscode",
+        "dbaeumer.vscode-eslint",
+        "ms-azuretools.vscode-docker"
+      ],
+      // Python関連の設定を削除
+      "settings": {
+        "terminal.integrated.defaultProfile.linux": "bash"
+      }
+    }
+  },
+  
+  "forwardPorts": [8000, 3000, 3306]
+  //"postStartCommand": "git config --global --add safe.directory ${containerWorkspaceFolder}"
+}

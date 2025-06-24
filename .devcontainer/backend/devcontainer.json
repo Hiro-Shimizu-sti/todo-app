@@ -1,0 +1,45 @@
+{
+  "name": "Backend(FastAPI)",
+  "dockerComposeFile": "../../docker-compose.yml",
+  // 開発のメインとなるコンテナを指定します
+  "service": "backend",
+  // VS Codeで開くワークスペースのパスを指定します
+  "workspaceFolder": "/workspaces/${localWorkspaceFolderBasename}/backend",
+
+  // コンテナ作成後に実行するコマンド
+  //"postCreateCommand": "pip install --user -r /backend/requirements.txt",
+  "postCreateCommand": "python -m venv .venv && . .venv/bin/activate && pip install -r requirements.txt",
+
+  // VS Codeエディタのカスタマイズ
+  "customizations": {
+    "vscode": {
+      // 推奨する拡張機能
+      "extensions": [
+        "ms-python.python",
+        "ms-python.vscode-pylance",
+        "charliermarsh.ruff",
+        "esbenp.prettier-vscode",
+        "dbaeumer.vscode-eslint",
+        "ms-azuretools.vscode-docker"
+      ],
+      // VS Codeの設定
+      "settings": {
+        "python.defaultInterpreterPath": "${workspaceFolder}/.venv/bin/python",
+        "python.linting.enabled": true,
+        "python.linting.pylintEnabled": false,
+        "python.formatting.provider": "none",
+        "[python]": {
+          "editor.formatOnSave": true,
+          "editor.codeActionsOnSave": {
+            "source.fixAll": "explicit"
+          }
+        },
+        "terminal.integrated.defaultProfile.linux": "bash"
+        //"dev.containers.dockerCredentialHelper": false
+      }
+    }
+  },
+  // 他のコンテナへポートフォワーディングします
+  "forwardPorts": [8000, 3000, 3306]
+  //"postStartCommand": "git config --global --add safe.directory ${containerWorkspaceFolder}"
+}
