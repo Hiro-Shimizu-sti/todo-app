@@ -1,7 +1,7 @@
 from pydantic import BaseModel, ConfigDict, Field
 from datetime import datetime
 from typing import Optional
-from .model import TodoStatus
+from .models import TodoStatus
 
 
 class TodoBase(BaseModel):

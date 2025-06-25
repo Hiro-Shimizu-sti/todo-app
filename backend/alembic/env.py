@@ -11,7 +11,7 @@ import os
 # プロジェクトのルートパスをPythonの検索パスに追加
 sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
 # あなたのモデルで定義されているBaseオブジェクトをインポート
-from src.model import Base
+from src.models import Base
 # --------------------------------
 
 # this is the Alembic Config object, which provides
