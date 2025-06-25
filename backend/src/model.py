@@ -1,15 +1,12 @@
 from sqlalchemy import Column, Integer, String, Text, DateTime, Enum, func
-from sqlalchemy.ext.declarative import declarative_base
 from enum import Enum as PyEnum
+from .database import Base
 
 
 class TodoStatus(PyEnum):
     PENDING = "pending"  # 未着手
     IN_PROGRESS = "in_progress"  # 進行中
     COMPLETED = "completed"  # 完了
-
-
-Base = declarative_base()
 
 
 class Todo(Base):
