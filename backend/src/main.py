@@ -2,6 +2,7 @@ from fastapi import FastAPI, Depends, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
 from typing import List
+from sqlalchemy import text
 
 from . import crud, models, schemas, database
 
@@ -31,7 +32,7 @@ def read_root():
 def health_check(db: Session = Depends(database.get_db)):
     try:
         # 簡単なクエリを実行してDB接続を確認
-        db.execute("SELECT 1")
+        db.execute(text("SELECT 1"))
         return {"status": "healthy", "database": "connected"}
     except Exception as e:
         raise HTTPException(

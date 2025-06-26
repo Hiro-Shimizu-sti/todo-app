@@ -43,9 +43,7 @@ def update_todo(
         return None
 
     # 送信されたフィールドのみ更新
-    update_data = todo_update.model_dump(
-        exclude_unset=True
-    )  # Noneでないフィールドのみ取得
+    update_data = todo_update.model_dump(exclude_unset=True)  # 未設定のフィールドは除外
     for field, value in update_data.items():
         setattr(db_todo, field, value)
 
