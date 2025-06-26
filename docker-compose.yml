@@ -23,7 +23,7 @@ services:
     volumes:
       # ソースコードをマウントし、node_modulesはコンテナ内のものを使用
       - .:/workspaces/test-app
-      - /workspaces/test-app/node_modules
+      - /workspaces/test-app/frontend/node_modules
     ports:
       - "3000:3000"
     environment:
