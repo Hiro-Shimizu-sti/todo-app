@@ -24,24 +24,6 @@ function TodoList() {
     }
   };
 
-  const fetchTodosByStatus = async (status) => {
-    try {
-      const response = await api.readTodoByStatus(status);
-      setTodos(response.data);
-    } catch (error) {
-      console.error("Error fetching todos by status:", error);
-    }
-  };
-
-  const searchTodos = async (searchTerm) => {
-    try {
-      const response = await api.searchTodo(searchTerm);
-      setTodos(response.data);
-    } catch (error) {
-      console.error("Error searching todos:", error);
-    }
-  };
-
   const handleAddTodo = async (e) => {
     e.preventDefault();
     if (!newTodoTitle.trim()) return;
@@ -82,28 +64,29 @@ function TodoList() {
   const handleStatusFilterChange = (e) => {
     const selectedStatus = e.target.value;
     setStatusFilter(selectedStatus);
-    
-    if (selectedStatus === 'all') {
-      fetchTodos();
-    } else {
-      fetchTodosByStatus(selectedStatus);
-    }
-  };
-
-  const handleSearch = async (e) => {
-    e.preventDefault();
-    if (!searchTerm.trim()) {
-      fetchTodos();
-      return;
-    }
-    await searchTodos(searchTerm);
   };
 
   const handleClearSearch = () => {
     setSearchTerm('');
     setStatusFilter('all');
-    fetchTodos();
   };
+
+  // フィルタリングされたTODOリストを取得
+  const getFilteredTodos = () => {
+    return todos.filter(todo => {
+      // ステータスフィルター
+      const statusMatch = statusFilter === 'all' || todo.status === statusFilter;
+      
+      // 検索フィルター
+      const searchMatch = !searchTerm.trim() || 
+        todo.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        (todo.description && todo.description.toLowerCase().includes(searchTerm.toLowerCase()));
+      
+      return statusMatch && searchMatch;
+    });
+  };
+
+  const filteredTodos = getFilteredTodos();
 
   const handleTodoClick = (todoId) => {
     navigate(`/todo/${todoId}`);
@@ -118,18 +101,18 @@ function TodoList() {
         <h3>検索・フィルター</h3>
         
         {/* 検索フォーム */}
-        <form onSubmit={handleSearch} style={{ marginBottom: '10px' }}>
+        <div style={{ marginBottom: '10px' }}>
           <input
             type="text"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            placeholder="TODOを検索..."
+            placeholder="TODOを検索... (リアルタイム検索)"
             style={{ marginRight: '10px', padding: '5px', width: '300px' }}
           />
-          <button type="button" onClick={handleClearSearch} style={{ marginLeft: '10px' }}>
+          <button type="button" onClick={handleClearSearch}>
             クリア
           </button>
-        </form>
+        </div>
 
         {/* ステータスフィルター */}
         <div>
@@ -187,7 +170,7 @@ function TodoList() {
 
       {/* TODOリスト表示数の情報 */}
       <div style={{ marginBottom: '10px', color: '#666' }}>
-        表示中のTODO: {todos.length}件
+        表示中のTODO: {filteredTodos.length}件 (全{todos.length}件中)
         {statusFilter !== 'all' && (
           <span> (ステータス: {
             statusFilter === 'pending' ? '未着手' : 
@@ -201,7 +184,7 @@ function TodoList() {
 
       {/* TODOリスト */}
       <ul style={{ listStyle: 'none', padding: 0 }}>
-        {todos.map(todo => (
+        {filteredTodos.map(todo => (
           <li key={todo.id} style={{ marginBottom: '15px', padding: '15px', border: '1px solid #ccc', borderRadius: '8px', backgroundColor: '#ffffff' }}>
             <div style={{ cursor: 'pointer' }} onClick={() => handleTodoClick(todo.id)}>
               <div style={{ marginBottom: '8px' }}>
@@ -260,9 +243,15 @@ function TodoList() {
         ))}
       </ul>
 
+      {filteredTodos.length === 0 && todos.length > 0 && (
+        <div style={{ textAlign: 'center', padding: '40px', color: '#666' }}>
+          条件に一致するTODOが見つかりませんでした。
+        </div>
+      )}
+
       {todos.length === 0 && (
         <div style={{ textAlign: 'center', padding: '40px', color: '#666' }}>
-          TODOが見つかりませんでした。
+          TODOがありません。新しいTODOを追加してください。
         </div>
       )}
     </div>
