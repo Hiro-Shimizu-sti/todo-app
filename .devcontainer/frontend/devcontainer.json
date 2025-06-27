@@ -7,7 +7,7 @@
   "service": "frontend",
 
   // ワークスペースのパスをfrontendディレクトリに変更
-  "workspaceFolder": "/workspaces/${localWorkspaceFolderBasename}/frontend",
+  "workspaceFolder": "/app",
 
   // コンテナ作成後にnpm installを実行
   "postCreateCommand": "npm install",

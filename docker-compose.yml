@@ -22,8 +22,8 @@ services:
       dockerfile: Dockerfile
     volumes:
       # ソースコードをマウントし、node_modulesはコンテナ内のものを使用
-      - .:/workspaces/test-app
-      - /workspaces/test-app/frontend/node_modules
+      - ./frontend:/app
+      - /app/node_modules
     ports:
       - "3000:3000"
     environment:
