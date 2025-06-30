@@ -27,21 +27,21 @@ export const updateTodo = (id,todoData) => {
 }
 
 //TODOの削除
-export const deleteTodo = (id,todoData) => {
-    return apiClient.delete(`/api/todos/${id}`,todoData);
+export const deleteTodo = (id) => {
+    return apiClient.delete(`/api/todos/${id}`);
 }
 
-//ステータス別TODO表示
-export const readTodoByStatus = (todoStatus) => {
-    return apiClient.get(`/api/todos/status/${todoStatus}`);
-}
+// //ステータス別TODO表示
+// export const readTodoByStatus = (todoStatus) => {
+//     return apiClient.get(`/api/todos/status/${todoStatus}`);
+// }
 
-//Todo検索
-export const searchTodo = (searchTerm) => {
-    return apiClient.get(`/api/todos/search/${searchTerm}`);
-}
+// //Todo検索
+// export const searchTodo = (searchTerm) => {
+//     return apiClient.get(`/api/todos/search/${searchTerm}`);
+// }
 
-//統計情報表示
-export const getTodoStats = () => {
-    return apiClient.get('/api/todos/stats/count');
-}
+// //統計情報表示
+// export const getTodoStats = () => {
+//     return apiClient.get('/api/todos/stats/count');
+// }
