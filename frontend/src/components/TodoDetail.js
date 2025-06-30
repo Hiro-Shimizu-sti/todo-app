@@ -230,13 +230,6 @@ function TodoDetail() {
               </div>
             )}
 
-            <div style={{ marginBottom: '15px' }}>
-              <h4 style={{ margin: '0 0 10px 0', color: '#666' }}>ID:</h4>
-              <span style={{ fontFamily: 'monospace', backgroundColor: '#e9ecef', padding: '2px 6px', borderRadius: '3px' }}>
-                {todo.id}
-              </span>
-            </div>
-
             {todo.created_at && (
               <div style={{ marginBottom: '15px' }}>
                 <h4 style={{ margin: '0 0 10px 0', color: '#666' }}>作成日時:</h4>

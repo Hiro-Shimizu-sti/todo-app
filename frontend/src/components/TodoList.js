@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import * as api from '../api';
 
@@ -66,27 +66,43 @@ function TodoList() {
     setStatusFilter(selectedStatus);
   };
 
+  const handleSearchChange = (e) => {
+    const searchValue = e.target.value;
+    setSearchTerm(searchValue);
+  };
+
   const handleClearSearch = () => {
     setSearchTerm('');
     setStatusFilter('all');
   };
 
-  // フィルタリングされたTODOリストを取得
-  const getFilteredTodos = () => {
-    return todos.filter(todo => {
+  // フィルタリング＆ソートされたTODOリストを取得
+  const getFilteredTodos = useCallback(() => {
+    // Step 1: フィルタリング
+    const filtered = todos.filter(todo => {
       // ステータスフィルター
       const statusMatch = statusFilter === 'all' || todo.status === statusFilter;
       
-      // 検索フィルター
+      // 検索フィルター（タイトルと説明文を対象）
       const searchMatch = !searchTerm.trim() || 
         todo.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
         (todo.description && todo.description.toLowerCase().includes(searchTerm.toLowerCase()));
       
       return statusMatch && searchMatch;
     });
-  };
 
-  const filteredTodos = getFilteredTodos();
+    // Step 2: 更新日時順でソート（新しい順）
+    return filtered.sort((a, b) => {
+      // 更新日時優先、なければ作成日時
+      const dateA = new Date(a.updated_at || a.created_at || 0);
+      const dateB = new Date(b.updated_at || b.created_at || 0);
+      return dateB - dateA; // 降順（新しい順）
+    });
+  }, [todos, statusFilter, searchTerm]);
+
+  const filteredTodos = useMemo(() => {
+    return getFilteredTodos();
+  }, [getFilteredTodos]);
 
   const handleTodoClick = (todoId) => {
     navigate(`/todo/${todoId}`);
@@ -105,7 +121,7 @@ function TodoList() {
           <input
             type="text"
             value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
+            onChange={handleSearchChange}
             placeholder="TODOを検索... (リアルタイム検索)"
             style={{ marginRight: '10px', padding: '5px', width: '300px' }}
           />
