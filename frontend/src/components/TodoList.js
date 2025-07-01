@@ -1,5 +1,32 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { 
+  Box, 
+  Card, 
+  CardContent, 
+  Collapse, 
+  IconButton, 
+  Typography,
+  TextField,
+  Select,
+  MenuItem,
+  FormControl,
+  InputLabel,
+  Button,
+  Container,
+  Paper,
+  Chip,
+  Divider,
+  Alert,
+  Stack
+} from '@mui/material';
+import { 
+  ExpandMore, 
+  ExpandLess, 
+  Search, 
+  Clear, 
+  Delete
+} from '@mui/icons-material';
 import * as api from '../api';
 
 function TodoList() {
@@ -10,6 +37,7 @@ function TodoList() {
   const [newTodoStatus, setNewTodoStatus] = useState('pending');
   const [statusFilter, setStatusFilter] = useState('all');
   const [searchTerm, setSearchTerm] = useState('');
+  const [isFormOpen, setIsFormOpen] = useState(false); // フォームの開閉状態
 
   useEffect(() => {
     fetchTodos();
@@ -37,6 +65,7 @@ function TodoList() {
       setNewTodoTitle('');
       setNewTodoDescription('');
       setNewTodoStatus('pending');
+      setIsFormOpen(false); // フォームを閉じる
       fetchTodos();
     } catch (error) {
       console.error("Error adding todo:", error);
@@ -99,168 +128,262 @@ function TodoList() {
   };
 
   return (
-    <div>
-      <h1>TODO管理アプリ</h1>
+    <Container maxWidth="md" sx={{ py: 4 }}>
+      <Typography variant="h3" component="h1" gutterBottom align="center" sx={{ mb: 4 }}>
+        TODO管理アプリ
+      </Typography>
       
       {/* 検索・フィルター機能 */}
-      <div style={{ marginBottom: '20px', padding: '15px', border: '1px solid #ddd', borderRadius: '5px', backgroundColor: '#f9f9f9' }}>
-        <h3>検索・フィルター</h3>
+      <Paper elevation={2} sx={{ p: 3, mb: 3 }}>
+        <Typography variant="h6" gutterBottom>
+          検索・フィルター
+        </Typography>
         
-        {/* 検索フォーム */}
-        <div style={{ marginBottom: '10px' }}>
-          <input
-            type="text"
-            value={searchTerm}
-            onChange={handleSearchChange}
-            placeholder="TODOを検索... (リアルタイム検索)"
-            style={{ marginRight: '10px', padding: '5px', width: '300px' }}
-          />
-          <button type="button" onClick={handleClearSearch}>
-            クリア
-          </button>
-        </div>
+        <Stack spacing={2}>
+          {/* 検索フォーム */}
+          <Box sx={{ display: 'flex', alignItems: 'stretch', gap: 1 }}>
+            <TextField
+              fullWidth
+              label="TODOを検索"
+              variant="outlined"
+              //size="medium"
+              value={searchTerm}
+              onChange={handleSearchChange}
+              placeholder="リアルタイム検索"
+              InputProps={{
+                startAdornment: <Search sx={{ color: 'text.secondary', mr: 1 }} />
+              }}
+            />
+            <Button 
+              variant="outlined" 
+              onClick={handleClearSearch}
+              startIcon={<Clear />}
+              //size="medium"
+              color = "error"
+              sx={{ 
+                whiteSpace: 'nowrap',
+                minWidth: 'auto',
+                px: 2
+              }}
+            >
+              クリア
+            </Button>
+          </Box>
 
-        {/* ステータスフィルター */}
-        <div>
-          <label style={{ marginRight: '10px' }}>ステータス：</label>
-          <select
-            value={statusFilter}
-            onChange={handleStatusFilterChange}
-            style={{ padding: '5px' }}
-          >
-            <option value="all">すべて</option>
-            <option value="pending">未着手</option>
-            <option value="in_progress">進行中</option>
-            <option value="completed">完了</option>
-          </select>
-        </div>
-      </div>
+          {/* ステータスフィルター */}
+          <FormControl sx={{ minWidth: 200 }}>
+            <InputLabel>ステータス</InputLabel>
+            <Select
+              value={statusFilter}
+              label="ステータス"
+              onChange={handleStatusFilterChange}
+            >
+              <MenuItem value="all">すべて</MenuItem>
+              <MenuItem value="pending">未着手</MenuItem>
+              <MenuItem value="in_progress">進行中</MenuItem>
+              <MenuItem value="completed">完了</MenuItem>
+            </Select>
+          </FormControl>
+        </Stack>
+      </Paper>
       
       {/* TODO追加フォーム */}
-      <form onSubmit={handleAddTodo} style={{ marginBottom: '20px', padding: '15px', border: '1px solid #ddd', borderRadius: '5px' }}>
-        <h3>新しいTODOを追加</h3>
-        <div style={{ marginBottom: '10px' }}>
-          <input
-            type="text"
-            value={newTodoTitle}
-            onChange={(e) => setNewTodoTitle(e.target.value)}
-            placeholder="タイトル"
-            required
-            style={{ width: '100%', padding: '8px' }}
-          />
-        </div>
-        <div style={{ marginBottom: '10px' }}>
-          <textarea
-            value={newTodoDescription}
-            onChange={(e) => setNewTodoDescription(e.target.value)}
-            placeholder="詳細"
-            rows="3"
-            style={{ width: '100%', padding: '8px' }}
-          />
-        </div>
-        <div style={{ marginBottom: '10px' }}>
-          <select
-            value={newTodoStatus}
-            onChange={(e) => setNewTodoStatus(e.target.value)}
-            style={{ padding: '8px' }}
-          >
-            <option value="pending">未着手</option>
-            <option value="in_progress">進行中</option>
-            <option value="completed">完了</option>
-          </select>
-        </div>
-        <button type="submit" style={{ backgroundColor: '#007bff', color: 'white', border: 'none', padding: '8px 16px', borderRadius: '4px' }}>
-          TODOを追加
-        </button>
-      </form>
+      <Card sx={{ marginBottom: 2 }}>
+        <CardContent>
+          <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+            <Typography variant="h6" component="h3">
+              新しいTODOを追加
+            </Typography>
+            <IconButton
+              onClick={() => setIsFormOpen(!isFormOpen)}
+              aria-expanded={isFormOpen}
+              aria-label="フォームを開く"
+            >
+              {isFormOpen ? <ExpandLess /> : <ExpandMore />}
+            </IconButton>
+          </Box>
+          
+          <Collapse in={isFormOpen} timeout="auto" unmountOnExit>
+            <Box component="form" onSubmit={handleAddTodo} sx={{ mt: 2 }}>
+              <TextField
+                fullWidth
+                label="タイトル"
+                variant="outlined"
+                value={newTodoTitle}
+                onChange={(e) => setNewTodoTitle(e.target.value)}
+                required
+                sx={{ mb: 2 }}
+              />
+              
+              <TextField
+                fullWidth
+                label="詳細"
+                variant="outlined"
+                multiline
+                rows={3}
+                value={newTodoDescription}
+                onChange={(e) => setNewTodoDescription(e.target.value)}
+                sx={{ mb: 2 }}
+              />
+              
+              <FormControl fullWidth sx={{ mb: 2 }}>
+                <InputLabel>ステータス</InputLabel>
+                <Select
+                  value={newTodoStatus}
+                  label="ステータス"
+                  onChange={(e) => setNewTodoStatus(e.target.value)}
+                >
+                  <MenuItem value="pending">未着手</MenuItem>
+                  <MenuItem value="in_progress">進行中</MenuItem>
+                  <MenuItem value="completed">完了</MenuItem>
+                </Select>
+              </FormControl>
+              
+              <Button 
+                type="submit" 
+                variant="contained" 
+                color="primary"
+                sx={{ mr: 1 }}
+              >
+                TODOを追加
+              </Button>
+              
+              <Button 
+                type="button" 
+                variant="outlined" 
+                color = "error"
+                onClick={() => setIsFormOpen(false)}
+              >
+                キャンセル
+              </Button>
+            </Box>
+          </Collapse>
+        </CardContent>
+      </Card>
 
       {/* TODOリスト表示数の情報 */}
-      <div style={{ marginBottom: '10px', color: '#666' }}>
-        表示中のTODO: {filteredTodos.length}件 (全{todos.length}件中)
-        {statusFilter !== 'all' && (
-          <span> (ステータス: {
-            statusFilter === 'pending' ? '未着手' : 
-            statusFilter === 'in_progress' ? '進行中' : '完了'
-          })</span>
-        )}
-        {searchTerm && (
-          <span> (検索: "{searchTerm}")</span>
-        )}
-      </div>
+      <Box sx={{ mb: 2, p: 2, bgcolor: 'grey.100', borderRadius: 1 }}>
+        <Typography variant="body2" color="text.secondary">
+          表示中のTODO: <strong>{filteredTodos.length}件</strong> (全{todos.length}件中)
+          {statusFilter !== 'all' && (
+            <Chip 
+              label={`ステータス: ${
+                statusFilter === 'pending' ? '未着手' : 
+                statusFilter === 'in_progress' ? '進行中' : '完了'
+              }`}
+              size="small"
+              color="primary"
+              sx={{ ml: 1 }}
+            />
+          )}
+          {searchTerm && (
+            <Chip 
+              label={`検索: "${searchTerm}"`}
+              size="small"
+              color="secondary"
+              sx={{ ml: 1 }}
+            />
+          )}
+        </Typography>
+      </Box>
 
       {/* TODOリスト */}
-      <ul style={{ listStyle: 'none', padding: 0 }}>
+      <Stack spacing={2}>
         {filteredTodos.map(todo => (
-          <li key={todo.id} style={{ marginBottom: '15px', padding: '15px', border: '1px solid #ccc', borderRadius: '8px', backgroundColor: '#ffffff' }}>
-            <div style={{ cursor: 'pointer' }} onClick={() => handleTodoClick(todo.id)}>
-              <div style={{ marginBottom: '8px' }}>
-                <strong style={{ fontSize: '18px', color: '#333' }}>{todo.title}</strong>
-                <span style={{ 
-                  marginLeft: '10px', 
-                  padding: '4px 12px', 
-                  borderRadius: '12px',
-                  fontSize: '12px',
-                  fontWeight: 'bold',
-                  backgroundColor: 
-                    todo.status === 'completed' ? '#d4edda' : 
-                    todo.status === 'in_progress' ? '#fff3cd' : '#f8d7da',
-                  color: 
-                    todo.status === 'completed' ? '#155724' : 
-                    todo.status === 'in_progress' ? '#856404' : '#721c24'
-                }}>
-                  {todo.status === 'pending' ? '未着手' : 
-                   todo.status === 'in_progress' ? '進行中' : '完了'}
-                </span>
-              </div>
-              {todo.description && (
-                <div style={{ marginBottom: '10px', color: '#666', fontSize: '14px' }}>
-                  {todo.description.length > 100 ? `${todo.description.substring(0, 100)}...` : todo.description}
-                </div>
-              )}
-              <div style={{ fontSize: '12px', color: '#999' }}>
-                クリックして詳細を表示
-              </div>
-            </div>
-            <div style={{ marginTop: '15px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-              <select
-                value={todo.status}
-                onChange={(e) => {
-                  e.stopPropagation();
-                  handleToggleStatus(todo, e.target.value);
-                }}
-                style={{ marginRight: '10px', padding: '4px' }}
-                onClick={(e) => e.stopPropagation()}
-              >
-                <option value="pending">未着手</option>
-                <option value="in_progress">進行中</option>
-                <option value="completed">完了</option>
-              </select>
-              <button 
-                onClick={(e) => {
-                  e.stopPropagation();
-                  handleDeleteTodo(todo.id);
-                }}
-                style={{ backgroundColor: '#dc3545', color: 'white', border: 'none', padding: '4px 8px', borderRadius: '4px' }}
-              >
-                削除
-              </button>
-            </div>
-          </li>
+          <Card 
+            key={todo.id} 
+            elevation={2}
+            sx={{ 
+              cursor: 'pointer',
+              transition: 'all 0.2s',
+              '&:hover': {
+                elevation: 4,
+                transform: 'translateY(-2px)'
+              }
+            }}
+          >
+            <CardContent>
+              <Box onClick={() => handleTodoClick(todo.id)}>
+                <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
+                  <Typography variant="h6" component="h3" sx={{ flexGrow: 1 }}>
+                    {todo.title}
+                  </Typography>
+                  <Chip
+                    label={
+                      todo.status === 'pending' ? '未着手' : 
+                      todo.status === 'in_progress' ? '進行中' : '完了'
+                    }
+                    color={
+                      todo.status === 'completed' ? 'success' : 
+                      todo.status === 'in_progress' ? 'warning' : 'error'
+                    }
+                  />
+                </Box>
+                
+                {todo.description && (
+                  <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
+                    {todo.description.length > 100 ? 
+                      `${todo.description.substring(0, 100)}...` : 
+                      todo.description
+                    }
+                  </Typography>
+                )}
+                
+                <Typography variant="caption" color="text.secondary">
+                  クリックして詳細を表示
+                </Typography>
+              </Box>
+              
+              <Divider sx={{ my: 2 }} />
+              
+              <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                <FormControl size="small" sx={{ minWidth: 120 }}>
+                  <InputLabel>ステータス</InputLabel>
+                  <Select
+                    value={todo.status}
+                    label="ステータス"
+                    onChange={(e) => {
+                      e.stopPropagation();
+                      handleToggleStatus(todo, e.target.value);
+                    }}
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    <MenuItem value="pending">未着手</MenuItem>
+                    <MenuItem value="in_progress">進行中</MenuItem>
+                    <MenuItem value="completed">完了</MenuItem>
+                  </Select>
+                </FormControl>
+                
+                <Button
+                  variant="outlined"
+                  color="error"
+                  size="small"
+                  startIcon={<Delete />}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleDeleteTodo(todo.id);
+                  }}
+                >
+                  削除
+                </Button>
+              </Box>
+            </CardContent>
+          </Card>
         ))}
-      </ul>
+      </Stack>
 
       {filteredTodos.length === 0 && todos.length > 0 && (
-        <div style={{ textAlign: 'center', padding: '40px', color: '#666' }}>
+        <Alert severity="info" sx={{ mt: 3 }}>
           条件に一致するTODOが見つかりませんでした。
-        </div>
+        </Alert>
       )}
 
       {todos.length === 0 && (
-        <div style={{ textAlign: 'center', padding: '40px', color: '#666' }}>
+        <Alert severity="info" sx={{ mt: 3 }}>
           TODOがありません。新しいTODOを追加してください。
-        </div>
+        </Alert>
       )}
-    </div>
+    </Container>
   );
 }
 

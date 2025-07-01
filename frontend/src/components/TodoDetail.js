@@ -1,5 +1,37 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import { 
+  Box, 
+  Typography,
+  TextField,
+  Select,
+  MenuItem,
+  FormControl,
+  InputLabel,
+  Button,
+  Container,
+  Paper,
+  Chip,
+  Stack,
+  ButtonGroup,
+  Divider,
+  Card,
+  CardContent,
+  Alert,
+  CircularProgress,
+  Fade
+} from '@mui/material';
+import { 
+  Delete,
+  ArrowBack,
+  Edit,
+  Save,
+  Cancel,
+  Schedule,
+  Update,
+  Assignment,
+  Description
+} from '@mui/icons-material';
 import * as api from '../api';
 
 function TodoDetail() {
@@ -7,6 +39,7 @@ function TodoDetail() {
   const navigate = useNavigate();
   const [todo, setTodo] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
   const [error, setError] = useState(null);
   const [isEditing, setIsEditing] = useState(false);
   const [editForm, setEditForm] = useState({
@@ -36,6 +69,15 @@ function TodoDetail() {
 
   useEffect(() => {
     fetchTodoDetail();
+    
+    // デバッグ用：ブラウザのタイムゾーン情報を表示
+    console.log('=== ブラウザのタイムゾーン情報 ===');
+    console.log('タイムゾーン:', Intl.DateTimeFormat().resolvedOptions().timeZone);
+    console.log('現在時刻 (ローカル):', new Date().toString());
+    console.log('現在時刻 (UTC):', new Date().toUTCString());
+    console.log('現在時刻 (ISO):', new Date().toISOString());
+    console.log('現在時刻 (ja-JP):', new Date().toLocaleString('ja-JP'));
+    console.log('現在時刻 (ja-JP + Asia/Tokyo):', new Date().toLocaleString('ja-JP', { timeZone: 'Asia/Tokyo' }));
   }, [fetchTodoDetail]);
 
   const handleEdit = () => {
@@ -43,6 +85,16 @@ function TodoDetail() {
   };
 
   const handleCancelEdit = () => {
+    // 変更がある場合は確認ダイアログを表示
+    const hasChanges = 
+      editForm.title !== todo.title ||
+      editForm.description !== (todo.description || '') ||
+      editForm.status !== todo.status;
+
+    if (hasChanges && !window.confirm('変更を破棄しますか？')) {
+      return;
+    }
+
     setIsEditing(false);
     setEditForm({
       title: todo.title,
@@ -53,13 +105,22 @@ function TodoDetail() {
 
   const handleSaveEdit = async (e) => {
     e.preventDefault();
+    if (!editForm.title.trim()) {
+      setError('タイトルは必須です。');
+      return;
+    }
+
     try {
+      setSaving(true);
       await api.updateTodo(id, editForm);
-      setTodo({ ...todo, ...editForm });
+      setTodo({ ...todo, ...editForm, updated_at: new Date().toISOString() });
       setIsEditing(false);
+      setError(null);
     } catch (error) {
       console.error('Error updating todo:', error);
       setError('TODOの更新に失敗しました。');
+    } finally {
+      setSaving(false);
     }
   };
 
@@ -101,152 +162,270 @@ function TodoDetail() {
 
   if (loading) {
     return (
-      <div style={{ padding: '20px', textAlign: 'center' }}>
-        <p>読み込み中...</p>
-      </div>
+      <Container maxWidth="md" sx={{ py: 4, textAlign: 'center' }}>
+        <CircularProgress size={60} />
+        <Typography variant="h6" sx={{ mt: 2 }}>
+          読み込み中...
+        </Typography>
+      </Container>
     );
   }
 
   if (error) {
     return (
-      <div style={{ padding: '20px' }}>
-        <div style={{ color: 'red', marginBottom: '20px' }}>{error}</div>
-        <button onClick={() => navigate('/')}>一覧に戻る</button>
-      </div>
+      <Container maxWidth="md" sx={{ py: 4 }}>
+        <Alert severity="error" sx={{ mb: 2 }}>
+          {error}
+        </Alert>
+        <Button 
+          variant="contained" 
+          onClick={() => navigate('/')} 
+          startIcon={<ArrowBack />}
+        >
+          一覧に戻る
+        </Button>
+      </Container>
     );
   }
 
   if (!todo) {
     return (
-      <div style={{ padding: '20px' }}>
-        <p>TODOが見つかりませんでした。</p>
-        <button onClick={() => navigate('/')}>一覧に戻る</button>
-      </div>
+      <Container maxWidth="md" sx={{ py: 4 }}>
+        <Alert severity="warning" sx={{ mb: 2 }}>
+          TODOが見つかりませんでした。
+        </Alert>
+        <Button 
+          variant="contained" 
+          onClick={() => navigate('/')} 
+          startIcon={<ArrowBack />}
+        >
+          一覧に戻る
+        </Button>
+      </Container>
     );
   }
 
   return (
-    <div style={{ padding: '20px', maxWidth: '800px', margin: '0 auto' }}>
-      <div style={{ marginBottom: '20px' }}>
-        <button onClick={() => navigate('/')} style={{ marginRight: '10px' }}>
-          ← 一覧に戻る
-        </button>
-        {!isEditing && (
-          <>
-            <button onClick={handleEdit} style={{ marginRight: '10px' }}>
-              編集
-            </button>
-            <button onClick={handleDelete} style={{ backgroundColor: '#dc3545', color: 'white', border: 'none', padding: '5px 10px' }}>
-              削除
-            </button>
-          </>
-        )}
-      </div>
-
-      {isEditing ? (
-        <div>
-          <h2>TODO編集</h2>
-          <form onSubmit={handleSaveEdit}>
-            <div style={{ marginBottom: '15px' }}>
-              <label style={{ display: 'block', marginBottom: '5px', fontWeight: 'bold' }}>
-                タイトル:
-              </label>
-              <input
-                type="text"
-                value={editForm.title}
-                onChange={(e) => setEditForm({ ...editForm, title: e.target.value })}
-                required
-                style={{ width: '100%', padding: '8px', fontSize: '16px' }}
-              />
-            </div>
-
-            <div style={{ marginBottom: '15px' }}>
-              <label style={{ display: 'block', marginBottom: '5px', fontWeight: 'bold' }}>
-                詳細:
-              </label>
-              <textarea
-                value={editForm.description}
-                onChange={(e) => setEditForm({ ...editForm, description: e.target.value })}
-                rows="5"
-                style={{ width: '100%', padding: '8px', fontSize: '16px' }}
-              />
-            </div>
-
-            <div style={{ marginBottom: '15px' }}>
-              <label style={{ display: 'block', marginBottom: '5px', fontWeight: 'bold' }}>
-                ステータス:
-              </label>
-              <select
-                value={editForm.status}
-                onChange={(e) => setEditForm({ ...editForm, status: e.target.value })}
-                style={{ padding: '8px', fontSize: '16px' }}
+    <Container maxWidth="md" sx={{ py: 4 }}>
+      <Stack spacing={3}>
+        {/* ヘッダーエリア */}
+        <Box elevation={1} sx={{ p: 2}}>
+          <Stack direction="row" alignItems="center" justifyContent="space-between">
+            <Typography variant="h4" sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+              <Assignment color="inherit" />
+              TODO詳細
+            </Typography>
+            <ButtonGroup variant="outlined" size="medium">
+              <Button onClick={() => navigate('/')} startIcon={<ArrowBack />}>
+                一覧に戻る
+              </Button>
+              <Button 
+                onClick={handleEdit} 
+                disabled={isEditing} 
+                startIcon={<Edit />}
+                color="primary"
               >
-                <option value="pending">未着手</option>
-                <option value="in_progress">進行中</option>
-                <option value="completed">完了</option>
-              </select>
-            </div>
+                編集
+              </Button>
+              <Button 
+                onClick={handleDelete} 
+                color="error" 
+                startIcon={<Delete />}
+                disabled={isEditing}
+              >
+                削除
+              </Button>
+            </ButtonGroup>
+          </Stack>
+        </Box>
 
-            <div>
-              <button type="submit" style={{ marginRight: '10px', backgroundColor: '#28a745', color: 'white', border: 'none', padding: '8px 16px' }}>
-                保存
-              </button>
-              <button type="button" onClick={handleCancelEdit} style={{ backgroundColor: '#6c757d', color: 'white', border: 'none', padding: '8px 16px' }}>
-                キャンセル
-              </button>
-            </div>
-          </form>
-        </div>
-      ) : (
-        <div>
-          <h2 style={{ marginBottom: '20px' }}>TODO詳細</h2>
-          
-          <div style={{ border: '1px solid #ddd', borderRadius: '8px', padding: '20px', backgroundColor: '#f9f9f9' }}>
-            <div style={{ marginBottom: '15px' }}>
-              <h3 style={{ margin: '0 0 10px 0' }}>{todo.title}</h3>
-              <span style={{ 
-                padding: '5px 12px', 
-                borderRadius: '15px',
-                fontSize: '14px',
-                fontWeight: 'bold',
-                ...getStatusColor(todo.status)
-              }}>
-                {getStatusText(todo.status)}
-              </span>
-            </div>
+        {/* エラー表示 */}
+        {error && (
+          <Fade in={!!error}>
+            <Alert severity="error" onClose={() => setError(null)}>
+              {error}
+            </Alert>
+          </Fade>
+        )}
+        
+        {/* メインコンテンツ */}
+        <Paper 
+          elevation={isEditing ? 4 : 2} 
+          sx={{ 
+            p: 4, 
+            backgroundColor: isEditing ? '#fafafa' : 'white',
+            border: isEditing ? '2px solid #1976d2' : 'none',
+            transition: 'all 0.3s ease'
+          }}
+        >
+          {isEditing ? (
+            // 編集モード
+            <Fade in={isEditing}>
+              <Box component="form" onSubmit={handleSaveEdit}>
+                <Typography variant="h5" gutterBottom sx={{ mb: 3, color: '#1976d2' }}>
+                  編集モード
+                </Typography>
+                
+                <TextField
+                  fullWidth
+                  label="タイトル"
+                  variant="outlined"
+                  value={editForm.title}
+                  onChange={(e) => setEditForm({ ...editForm, title: e.target.value })}
+                  required
+                  sx={{ mb: 3 }}
+                  InputProps={{
+                    startAdornment: <Assignment sx={{ mr: 1, color: 'text.secondary' }} />
+                  }}
+                />
+                
+                <TextField
+                  fullWidth
+                  label="詳細"
+                  variant="outlined"
+                  multiline
+                  rows={4}
+                  value={editForm.description}
+                  onChange={(e) => setEditForm({ ...editForm, description: e.target.value })}
+                  sx={{ mb: 3 }}
+                  InputProps={{
+                    startAdornment: <Description sx={{ mr: 1, color: 'text.secondary', alignSelf: 'flex-start', mt: 1 }} />
+                  }}
+                />
+                
+                <FormControl fullWidth sx={{ mb: 4 }}>
+                  <InputLabel>ステータス</InputLabel>
+                  <Select
+                    value={editForm.status}
+                    label="ステータス"
+                    onChange={(e) => setEditForm({ ...editForm, status: e.target.value })}
+                  >
+                    <MenuItem value="pending">未着手</MenuItem>
+                    <MenuItem value="in_progress">進行中</MenuItem>
+                    <MenuItem value="completed">完了</MenuItem>
+                  </Select>
+                </FormControl>
+                
+                <Stack direction="row" spacing={2} justifyContent="center">
+                  <Button 
+                    type="submit" 
+                    variant="contained" 
+                    color="primary"
+                    size="large"
+                    startIcon={saving ? <CircularProgress size={20} color="inherit" /> : <Save />}
+                    disabled={saving}
+                    sx={{ minWidth: 120 }}
+                  >
+                    {saving ? '保存中...' : '保存'}
+                  </Button>
+                  <Button 
+                    type="button" 
+                    variant="outlined" 
+                    onClick={handleCancelEdit}
+                    size="large"
+                    startIcon={<Cancel />}
+                    disabled={saving}
+                    sx={{ minWidth: 120 }}
+                  >
+                    キャンセル
+                  </Button>
+                </Stack>
+              </Box>
+            </Fade>
+          ) : (
+            // 表示モード
+            <Stack spacing={3}>
+              {/* タイトルとステータス */}
+              <Box>
+                <Typography variant="h4" gutterBottom sx={{ mb: 2, fontWeight: 600 }}>
+                  {todo.title}
+                </Typography>
+                <Chip 
+                  label={getStatusText(todo.status)}
+                  sx={{ 
+                    ...getStatusColor(todo.status),
+                    fontWeight: 'bold',
+                    fontSize: '1rem',
+                    px: 2,
+                    py: 1,
+                    borderRadius: 2,
+                    border: '2px solid',
+                    borderColor: getStatusColor(todo.status).borderColor
+                  }}
+                  size="medium"
+                />
+              </Box>
 
-            {todo.description && (
-              <div style={{ marginBottom: '15px' }}>
-                <h4 style={{ margin: '0 0 10px 0', color: '#666' }}>詳細:</h4>
-                <div style={{ 
-                  backgroundColor: 'white', 
-                  padding: '15px', 
-                  borderRadius: '5px', 
-                  border: '1px solid #e0e0e0',
-                  whiteSpace: 'pre-wrap'
-                }}>
-                  {todo.description}
-                </div>
-              </div>
-            )}
+              {/* 詳細 */}
+              {todo.description && (
+                <Card variant="outlined" sx={{ backgroundColor: '#f8f9fa' }}>
+                  <CardContent>
+                    <Typography variant="h6" gutterBottom sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                      <Description color="inherit" />
+                      詳細
+                    </Typography>
+                    <Typography 
+                      variant="body1" 
+                      sx={{ 
+                        whiteSpace: 'pre-wrap',
+                        lineHeight: 1.7,
+                        fontSize: '1.1rem'
+                      }}
+                    >
+                      {todo.description}
+                    </Typography>
+                  </CardContent>
+                </Card>
+              )}
 
-            {todo.created_at && (
-              <div style={{ marginBottom: '15px' }}>
-                <h4 style={{ margin: '0 0 10px 0', color: '#666' }}>作成日時:</h4>
-                <span>{new Date(todo.created_at).toLocaleString('ja-JP')}</span>
-              </div>
-            )}
+              <Divider />
 
-            {todo.updated_at && (
-              <div>
-                <h4 style={{ margin: '0 0 10px 0', color: '#666' }}>更新日時:</h4>
-                <span>{new Date(todo.updated_at).toLocaleString('ja-JP')}</span>
-              </div>
-            )}
-          </div>
-        </div>
-      )}
-    </div>
+              {/* 日時情報 */}
+              <Stack spacing={2}>
+                <Stack direction={{ xs: 'column', sm: 'row' }} spacing={3}>
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                    <Schedule color="action" />
+                    <Box>
+                      <Typography variant="body2" color="text.secondary">
+                        作成日時
+                      </Typography>
+                      <Typography variant="body1" fontWeight="medium">
+                        {new Date(todo.created_at).toLocaleString('ja-JP', {
+                          timeZone: 'Asia/Tokyo',
+                          year: 'numeric',
+                          month: 'long',
+                          day: 'numeric',
+                          hour: '2-digit',
+                          minute: '2-digit'
+                        })}
+                      </Typography>
+                    </Box>
+                  </Box>
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                    <Update color="action" />
+                    <Box>
+                      <Typography variant="body2" color="text.secondary">
+                        更新日時
+                      </Typography>
+                      <Typography variant="body1" fontWeight="medium">
+                        {new Date(todo.updated_at).toLocaleString('ja-JP', {
+                          timeZone: 'Asia/Tokyo',
+                          year: 'numeric',
+                          month: 'long',
+                          day: 'numeric',
+                          hour: '2-digit',
+                          minute: '2-digit'
+                        })}
+                      </Typography>
+                    </Box>
+                  </Box>
+                </Stack>
+              </Stack>
+            </Stack>
+          )}
+        </Paper>
+      </Stack>
+    </Container>
   );
 }
 
