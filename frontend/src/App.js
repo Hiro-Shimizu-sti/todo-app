@@ -2,6 +2,7 @@ import React from "react";
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import TodoList from './components/TodoList';
 import TodoDetail from './components/TodoDetail';
+import MuiTestPage from './components/MuiTestPage';
 import './index.css';
 
 function App() {
@@ -11,6 +12,7 @@ function App() {
         <Routes>
           <Route path="/" element={<TodoList />} />
           <Route path="/todo/:id" element={<TodoDetail />} />
+          <Route path="/test" element={<MuiTestPage />} />
         </Routes>
       </div>
     </Router>
