@@ -5,6 +5,7 @@ import TodoDetail from './components/TodoDetail';
 import MuiTestPage from './components/MuiTestPage';
 import PieChartPage from './components/PieChartPage';
 import MuiChartsPage from './components/MuiChartsPage';
+import RechartsPage from './components/RechartsPage';
 import './index.css';
 
 function App() {
@@ -17,6 +18,7 @@ function App() {
           <Route path="/test" element={<MuiTestPage />} />
           <Route path="/chart" element={<PieChartPage />} />
           <Route path="/mui-charts" element={<MuiChartsPage />} />
+          <Route path="/recharts" element={<RechartsPage />} />
         </Routes>
       </div>
     </Router>

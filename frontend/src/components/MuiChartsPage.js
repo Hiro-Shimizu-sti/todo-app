@@ -27,56 +27,27 @@ const salesData = [
   { id: 3, label: 'プリンター', value: 50000, color: '#4BC0C0' },
   { id: 4, label: 'その他', value: 25000, color: '#9966FF' }
 ];
+const totalValue = salesData.reduce((sum, entry) => sum + entry.value, 0);
+
 
 function MuiChartsPage() {
-  const [pieChartType, setPieChartType] = useState('pie');
-
   return (
     <Container maxWidth="lg" sx={{ py: 4 }}>
       {/* ページヘッダー */}
       <Typography variant="h3" component="h1" gutterBottom align="center">
-        📊 MUI X Charts 円グラフデモ
+        📊 MUI X Charts ドーナツグラフデモ
       </Typography>
       
       <Typography variant="body1" color="text.secondary" align="center" sx={{ mb: 4 }}>
-        MUI X Chartsライブラリを使用したプロフェッショナルな円グラフ表示
+        MUI X Chartsライブラリを使用したドーナツ型円グラフ表示
       </Typography>
-
-      {/* チャート選択 */}
-      <Paper elevation={1} sx={{ p: 3, mb: 3 }}>
-        <Typography variant="h6" gutterBottom>
-          🎛️ 設定
-        </Typography>
-        
-        <Grid container spacing={3} alignItems="center">
-          <Grid item xs={12} md={6}>
-            <FormControl fullWidth>
-              <InputLabel>円グラフスタイル</InputLabel>
-              <Select
-                value={pieChartType}
-                onChange={(e) => setPieChartType(e.target.value)}
-                label="円グラフスタイル"
-              >
-                <MenuItem value="pie">通常の円グラフ</MenuItem>
-                <MenuItem value="donut">ドーナツ型</MenuItem>
-              </Select>
-            </FormControl>
-          </Grid>
-        </Grid>
-
-        <Box sx={{ mt: 2 }}>
-          <Typography variant="body2" color="text.secondary">
-            MUI X ChartsのPieChartコンポーネントを使用。ホバー効果、ハイライト機能、凡例表示が自動で実装されます。
-          </Typography>
-        </Box>
-      </Paper>
 
       {/* チャート表示エリア */}
       <Grid container spacing={3}>
         <Grid item xs={12} md={8}>
           <Paper elevation={3} sx={{ p: 3, height: 500 }}>
             <Typography variant="h6" gutterBottom align="center">
-              📊 売上構成比（MUI X Charts）
+              📊 売上構成比（ドーナツ型）
             </Typography>
             <PieChart
               series={[
@@ -84,7 +55,7 @@ function MuiChartsPage() {
                   data: salesData,
                   highlightScope: { faded: 'global', highlighted: 'item' },
                   faded: { innerRadius: 30, additionalRadius: -30, color: 'gray' },
-                  innerRadius: pieChartType === 'donut' ? 80 : 0,
+                  innerRadius: 80,
                   outerRadius: 120,
                   paddingAngle: 2,
                   cornerRadius: 5,
@@ -94,6 +65,7 @@ function MuiChartsPage() {
                   cy: 200,
                 }
               ]}
+              pieCenterLabel={`合計: ${totalValue}`}
               width={400}
               height={400}
               slotProps={{
@@ -103,7 +75,9 @@ function MuiChartsPage() {
                   padding: 0,
                 }
               }}
-            />
+            >
+            </PieChart>
+
           </Paper>
         </Grid>
         
